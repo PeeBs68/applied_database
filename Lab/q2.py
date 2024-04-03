@@ -25,26 +25,22 @@ def main():
 			
 			
 def fill_array():
-# Write the necessary code to fill the array.
-# -1 should not be part of the array
-
-# The following line of code is only to allow 
-# the program to run.
-# It should be deleted when you write your
-# own code
-	x = 1;
+	temparray=[]
+	num=int(input("Enter Num: "))
+	if num != -1:
+		temparray.append(num)
+	while num != -1:
+		num=int(input("Enter Num: "))
+		if num != -1:
+			temparray.append(num)
+	return temparray
 
 
 def find_gt_in_array(array):
-# Write the necessary code to get a number from the user
-# and print out all numbers in the array that are greater
-# than this number
+	num=int(input("Enter Num: "))
+	list = [x for x in array if x > num]
+	print(list)
 
-# The following line of code is only to allow 
-# the program to run.
-# It should be deleted when you write your
-# own code
-	x = 1;
 
 
 def display_menu():
