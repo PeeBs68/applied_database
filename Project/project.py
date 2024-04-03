@@ -94,6 +94,8 @@ def find_gt_in_array(array):
 
 
 def display_menu():
+#	import os
+	os.system('clear')
 	print("=" * 60)
 	print("                             MENU")
 	print("=" * 60)
@@ -101,12 +103,13 @@ def display_menu():
 	print("2 - Update City Population")
 	print("3 - Add New Person")
 	print("4 - Delete Person")
-	print("5 - Ciew Countries by population")
+	print("5 - View Countries by population")
 	print("6 - Show Twinned Cities")
 	print("7 - Twin with Dublin")
 
 	print("x - Exit application")
 
 if __name__ == "__main__":
+	import os
 	# execute only if run as a script 
 	main()
