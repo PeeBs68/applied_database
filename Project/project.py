@@ -83,7 +83,7 @@ def test_select():
 	result = cursor.fetchall()
 	for x in result:
 		print(x)
-	time.sleep(3)
+	time.sleep(3) # Replace with a "press c to continue or something"
 
 
 '''
