@@ -31,6 +31,9 @@ def main():
 		elif (choice == "7"):
 			twinned_with_dublin()
 			display_menu()
+		elif (choice == "8"):
+			test_select()
+			display_menu()
 		elif (choice == "x"):
 			break;
 		else:
@@ -72,6 +75,17 @@ def twinned_with_dublin():
 	print("Twinning with Dublin")
 	city_to_twin = input("Enter ID of City to twin with Dublin : ")
 
+def test_select():
+	cursor = db.cursor()
+	sql = "select * from student where id = %s"
+	values = (3,)
+	cursor.execute(sql, values)
+	result = cursor.fetchall()
+	for x in result:
+		print(x)
+	time.sleep(3)
+
+
 '''
 def fill_array():
 	temparray=[]
@@ -106,10 +120,22 @@ def display_menu():
 	print("5 - View Countries by population")
 	print("6 - Show Twinned Cities")
 	print("7 - Twin with Dublin")
+	print("8 - Test Select")
 
 	print("x - Exit application")
 
 if __name__ == "__main__":
 	import os
+	import mysql.connector
+	from config import config as cfg
+	import mysql.connector
+	import time
+
+	db = mysql.connector.connect(
+    host=cfg["host"],
+    user = cfg["user"],
+    password = cfg["password"],
+    database = cfg["database"]
+)
 	# execute only if run as a script 
 	main()
