@@ -38,6 +38,7 @@ def fill_array():
 
 def find_gt_in_array(array):
 	num=int(input("Enter Num: "))
+# https://stackoverflow.com/questions/4587915/return-list-of-items-in-list-greater-than-some-value
 	list = [x for x in array if x > num]
 	print(list)
 
