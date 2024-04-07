@@ -40,14 +40,63 @@ def main():
 			display_menu()
 			
 def view_cities():
-	print("Viewing Cities")
-	choice = input("Entry Country: ")
-	if choice != "q": # Probably should be a while loop when doing the real thing
-		print("Showing the details")
+	country = input("Entry Country: ")
+	cursor = db.cursor()
+	sql = "select ci.name, ci.district, ci.population, co.name as country_name from city ci inner join country co on ci.countrycode = co.code where co.name like %s"
+
+	values = ("%"+country+"%",)
+	cursor.execute(sql, values)
+	result = cursor.fetchall()
+	lines = 0
+	for x in result:
+		print(x)
+		lines = lines+1
+		if lines == 2:
+			next = input("Press any key to continue or q to quit: ")
+			lines = 0
+			if next == "q":
+				break
+	#if choice != "q": # Probably should be a while loop when doing the real thing
 		
 def update_population():
-	print("Updating Population")
-	choice = input("Enter City ID: ")
+	result=""
+	city_id = int(input("Enter City ID: "))
+	cursor = db.cursor()
+	sql = "select ci.name, ci.district, ci.population from city ci where ci.id = %s"
+	values = (city_id,)
+	cursor.execute(sql, values)
+	result = cursor.fetchall()
+	if len(result) == 1:
+		print(result)
+		to_do = ""
+		while to_do not in ("D", "d", "I", "i"):
+			to_do = input("[I]ncrease/[D]ecrease Population: ")
+			if to_do in "I, i":
+				symbol = "+"
+				#https://www.geeksforgeeks.org/what-does-s-mean-in-a-python-format-string/
+				sql = "update city set population = population + %s where ID = %s"
+			elif to_do in "D, d":
+				symbol = "-"
+				sql = "update city set population = population - %s where ID = %s"
+			else: 
+				print("Try Again...")
+				to_do=""
+		how_much = int(input("Enter Population "))
+		values = (how_much,city_id,)
+
+		cursor.execute(sql, values)
+		db.commit()
+	else:
+		print ("try Again...")
+
+
+	
+
+	
+	#for x in result:
+#		print(x)
+#	time.sleep(3)
+
 
 def add_person():
 	print("Adding Person")
