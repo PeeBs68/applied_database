@@ -104,7 +104,37 @@ def add_person():
 	name = input("Name: ")
 	age = int(input("Age: "))
 	salary = input("Salary: ")
-	city_id = int(input("City: "))
+	city_id = int(input("City ID: "))
+
+	# Checks for personid and city
+	cursor = db.cursor()
+	sql = "select * from person where personid = %s"
+	values = (id,)
+	cursor.execute(sql, values)
+	result = cursor.fetchall()
+
+	cursor2 = db.cursor()
+	sql = "select * from person where city = %s"
+	values2 = (city_id,)
+	cursor2.execute(sql, values2)
+	result2 = cursor2.fetchall()
+
+	if len(result) != 0:
+		print("Person Id", id, "already exists")
+		time.sleep(3)
+		display_menu()
+	elif len(result2) == 0:
+		print("City ID", city_id, "does not exist")
+		time.sleep(3)
+		display_menu()
+	else:
+		cursor = db.cursor()
+		sql = "insert into person values (%s, %s, %s, %s, %s)"
+		values = (id, name, age, salary, city_id,)
+		cursor.execute(sql, values)
+		db.commit()
+		print("Update Complete")
+		time.sleep(3) # Replace with a "press c to continue or something"
 
 def delete_person():
 	print("Deleting Person")
