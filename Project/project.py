@@ -133,29 +133,36 @@ def add_person():
 		values = (id, name, age, salary, city_id,)
 		cursor.execute(sql, values)
 		db.commit()
-		print("Update Complete")
+		print("Insert Complete")
 		time.sleep(3) # Replace with a "press c to continue or something"
 
 def delete_person():
-	print("Deleting Person")
-	id = input("Enter ID of person to delete: ")
-	cursor = db.cursor()
-	sql = "select * from hasvisitedcity where personid = %s"
-	values = (id,)
-	cursor.execute(sql, values)
-	result = cursor.fetchall()
-	if len(result) != 0:
-		print(f"Error: Can't delete Person ID: {id}. He/She has visited cities.")
-		time.sleep(3)
-		display_menu()
-	else:
-		cursor = db.cursor()
-		sql = "delete from person where personID = %s"
-		values = (id,)
-		cursor.execute(sql, values)
-		db.commit()
-		print(f"Person ID: {id} deleted")
-		time.sleep(3) # Replace with a "press c to continue or something"
+	while True:
+		try:
+			print("Deleting Person")
+			id = input("Enter ID of person to delete: ")
+			cursor = db.cursor()
+			sql = "select * from hasvisitedcity where personid = %s"
+			values = (id,)
+			cursor.execute(sql, values)
+			result = cursor.fetchall()
+			if len(result) != 0:
+				print(f"Error: Can't delete Person ID: {id}. He/She has visited cities.")
+				time.sleep(3)
+				display_menu()
+			else:
+				cursor = db.cursor()
+				sql = "delete from person where personID = %s"
+				values = (id,)
+				cursor.execute(sql, values)
+				db.commit()
+				print(f"Person ID: {id} deleted")
+				time.sleep(3) # Replace with a "press c to continue or something"
+		except mysql.connector.Error as err:
+			# https://stackoverflow.com/questions/68438901/how-do-i-handle-mysql-exceptions-in-python
+			print (f"Error: {err}")
+			time.sleep(3)
+			break
 
 def view_by_pop():
 	print("View Countries by Population")
