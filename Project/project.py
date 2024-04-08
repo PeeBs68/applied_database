@@ -138,12 +138,51 @@ def add_person():
 
 def delete_person():
 	print("Deleting Person")
-	to_del = input("Enter ID of person to delete: ")
+	id = input("Enter ID of person to delete: ")
+	cursor = db.cursor()
+	sql = "select * from hasvisitedcity where personid = %s"
+	values = (id,)
+	cursor.execute(sql, values)
+	result = cursor.fetchall()
+	if len(result) != 0:
+		print(f"Error: Can't delete Person ID: {id}. He/She has visited cities.")
+		time.sleep(3)
+		display_menu()
+	else:
+		cursor = db.cursor()
+		sql = "delete from person where personID = %s"
+		values = (id,)
+		cursor.execute(sql, values)
+		db.commit()
+		print(f"Person ID: {id} deleted")
+		time.sleep(3) # Replace with a "press c to continue or something"
 
 def view_by_pop():
 	print("View Countries by Population")
-	to_do = input("Enter < or > : ")
-	value = input("Enter population : ")
+	to_do = ""
+	cursor = db.cursor()
+	while to_do not in (">", "<", "="):
+		to_do = input("Enter < > or =: ")
+		if to_do == ">":
+			symbol = ">"
+			sql = "select code, name, continent, population from country where population > %s"
+		elif to_do == "<":
+			symbol = "<"
+			sql = "select code, name, continent, population from country where population < %s"
+		elif to_do == "=":
+			symbol = "="
+			sql = "select code, name, continent, population from country where population = %s"
+		else: 
+			print("Try Again...")
+			to_do=""
+	pop = int(input("Enter Population "))
+	values = (pop,)
+	cursor.execute(sql, values)
+	result = cursor.fetchall()
+	for x in result:
+		print(x)
+	time.sleep(3)
+
 
 def view_twinned():
 	print("View Twionned Cities")
