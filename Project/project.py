@@ -48,26 +48,43 @@ def view_cities():
 	cursor.execute(sql, values)
 	result = cursor.fetchall()
 	lines = 0
+	print("Name\tDistrict\tPopulation\tName")
+	#Note to self - maybe convert result to a list to format the output nicer
+	#resultstr = [str(x) for x in result]
+	#print (resultstr)
 	for x in result:
-		print(x)
+		print(*x, sep ='\t')
 		lines = lines+1
 		if lines == 2:
-			next = input("Press any key to continue or q to quit: ")
+			print("-- Quit (q) --")
+			next = click.getchar()   # Gets a single character
 			lines = 0
 			if next == "q":
 				break
-	#if choice != "q": # Probably should be a while loop when doing the real thing
+			else:
+				continue	
 		
 def update_population():
 	result=""
 	city_id = int(input("Enter City ID: "))
 	cursor = db.cursor()
-	sql = "select ci.name, ci.district, ci.population from city ci where ci.id = %s"
+	sql = "select id, name, countrycode, district, population, latitude, longitude from city where id = %s"
 	values = (city_id,)
 	cursor.execute(sql, values)
 	result = cursor.fetchall()
+
+	while len(result) == 0:
+		print("\nNo city found for ID = ", city_id)
+		city_id = int(input("\nEnter City ID: "))
+		cursor = db.cursor()
+		sql = "select id, name, countrycode, district, population, latitude, longitude from city where id = %s"
+		values = (city_id,)
+		cursor.execute(sql, values)
+		result = cursor.fetchall()
+
 	if len(result) == 1:
-		print(result)
+		heads = ("ID", "Name", "CountryCode", "District", "Population", "Longitude", "Latitude")
+		print(tabulate(result, headers = heads))
 		to_do = ""
 		while to_do not in ("D", "d", "I", "i"):
 			to_do = input("[I]ncrease/[D]ecrease Population: ")
@@ -86,6 +103,21 @@ def update_population():
 
 		cursor.execute(sql, values)
 		db.commit()
+
+		#Probably overkill to do this bit
+		cursor = db.cursor()
+		sql = "select population from city where id = %s"
+		values = (city_id,)
+		cursor.execute(sql, values)
+		result = cursor.fetchall()
+		# https://stackoverflow.com/questions/33161448/getting-only-element-from-a-single-element-list-in-python
+		[new]= result
+		print(f"\nPopulation updated to {new[0]}, returning to main menu")
+		#[new]= result
+		#print(new[0])
+		#for x in result:
+		#	print(*x)
+		time.sleep(3)
 	else:
 		print ("try Again...")
 
@@ -186,9 +218,8 @@ def view_by_pop():
 	values = (pop,)
 	cursor.execute(sql, values)
 	result = cursor.fetchall()
-	# https://stackoverflow.com/questions/9535954/printing-lists-as-tabular-data
-	from tabulate import tabulate
-	print(tabulate(result))
+	heads = ("code", "name", "continent", "population")
+	print(tabulate(result, headers = heads))
 	#for x in result:
 		#print (len(x))
 		#print(*result, sep = '\t')
@@ -262,7 +293,10 @@ if __name__ == "__main__":
 	from config import config as cfg
 	import mysql.connector
 	import time
-
+	# https://stackoverflow.com/questions/510357/how-to-read-a-single-character-from-the-user
+	import click
+	# https://stackoverflow.com/questions/9535954/printing-lists-as-tabular-data
+	from tabulate import tabulate
 	db = mysql.connector.connect(
     host=cfg["host"],
     user = cfg["user"],
