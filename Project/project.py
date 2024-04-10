@@ -186,13 +186,20 @@ def view_by_pop():
 	values = (pop,)
 	cursor.execute(sql, values)
 	result = cursor.fetchall()
-	for x in result:
-		print(x)
+	# https://stackoverflow.com/questions/9535954/printing-lists-as-tabular-data
+	from tabulate import tabulate
+	print(tabulate(result))
+	#for x in result:
+		#print (len(x))
+		#print(*result, sep = '\t')
+		#from tabulate import tabulate
+		#print(tabulate(result))
+		#print(x)
 	time.sleep(3)
 
 
 def view_twinned():
-	print("View Twionned Cities")
+	print("View Twinned Cities")
 	print ("Twinned Cities")
 	print ("--------------")
 
