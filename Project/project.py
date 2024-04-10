@@ -104,7 +104,7 @@ def update_population():
 		cursor.execute(sql, values)
 		db.commit()
 
-		#Probably overkill to do this bit
+		#Probably overkill to do this bit but looks nice to me...
 		cursor = db.cursor()
 		sql = "select population from city where id = %s"
 		values = (city_id,)
@@ -134,9 +134,9 @@ def add_person():
 	print("Adding Person")
 	id = int(input("ID: "))
 	name = input("Name: ")
-	age = int(input("Age: "))
+	age = input("Age: ")
 	salary = input("Salary: ")
-	city_id = int(input("City ID: "))
+	city_id = input("City ID: ")
 
 	# Checks for personid and city
 	cursor = db.cursor()
@@ -160,13 +160,23 @@ def add_person():
 		time.sleep(3)
 		display_menu()
 	else:
-		cursor = db.cursor()
-		sql = "insert into person values (%s, %s, %s, %s, %s)"
-		values = (id, name, age, salary, city_id,)
-		cursor.execute(sql, values)
-		db.commit()
-		print("Insert Complete")
-		time.sleep(3) # Replace with a "press c to continue or something"
+		while True:
+			try:
+				cursor = db.cursor()
+				sql = "insert into person values (%s, %s, %s, %s, %s)"
+				values = (id, name, age, salary, city_id,)
+				cursor.execute(sql, values)
+				db.commit()
+				print("Insert Complete")
+				time.sleep(3) # Replace with a "press c to continue or something"
+				break
+			except mysql.connector.Error as err:
+        		# https://stackoverflow.com/questions/68438901/how-do-i-handle-mysql-exceptions-in-python
+				print (f"Error: {err}")
+				print("Returning to main menu")
+				time.sleep(3)
+				break
+			
 
 def delete_person():
 	while True:
@@ -187,9 +197,18 @@ def delete_person():
 				sql = "delete from person where personID = %s"
 				values = (id,)
 				cursor.execute(sql, values)
+				# https://stackoverflow.com/questions/2511679/python-number-of-rows-affected-by-cursor-executeselect
+				rows_affected=cursor.rowcount
+				#print(rows_affected)
 				db.commit()
-				print(f"Person ID: {id} deleted")
-				time.sleep(3) # Replace with a "press c to continue or something"
+				if rows_affected == 0:
+					print(f"No rows deleted - person_id {id} does not exist")
+					time.sleep(3)
+					break
+				else:
+					print(f"Person ID: {id} deleted - returning to main menu")
+					time.sleep(3) # Replace with a "press c (using 'get' maybe)to continue or something"
+					break
 		except mysql.connector.Error as err:
 			# https://stackoverflow.com/questions/68438901/how-do-i-handle-mysql-exceptions-in-python
 			print (f"Error: {err}")
