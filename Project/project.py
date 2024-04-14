@@ -256,6 +256,23 @@ def view_twinned():
 def twinned_with_dublin():
 	print("Twinning with Dublin")
 	city_to_twin = input("Enter ID of City to twin with Dublin : ")
+	cursor = db.cursor()
+	sql = "select * from city where id = %s"
+	values = (city_to_twin,)
+	cursor.execute(sql, values)
+	result = cursor.fetchall()
+	if len(result) == 0:
+		print(f"Error: City ID: {city_to_twin} doesn't exist in MySQL Database.")
+		time.sleep(3)
+	else:
+		print("Exists in MySQL, now checking if it exists in neo4j")
+		#Check if it exists in neo4j
+		time.sleep(3)
+		#if it does check if the relationship exists
+			#Do nothing
+		#else
+			#create the relationship
+
 
 def test_select():
 	cursor = db.cursor()
