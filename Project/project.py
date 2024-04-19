@@ -279,12 +279,12 @@ def get_results(tx):
         x=x+1
     return final
 
-
+# Menu Item 7
 def twinned_with_dublin():
 	print("Twinning with Dublin")
 	city_to_twin = input("Enter ID of City to twin with Dublin : ")
 	cursor = db.cursor()
-	sql = "select * from city where id = %s"
+	sql = "select name from city where id = %s"
 	values = (city_to_twin,)
 	cursor.execute(sql, values)
 	result = cursor.fetchall()
@@ -292,14 +292,36 @@ def twinned_with_dublin():
 		print(f"Error: City ID: {city_to_twin} doesn't exist in MySQL Database.")
 		time.sleep(3)
 	else:
-		print("Exists in MySQL, now checking if it exists in neo4j")
-		#Check if it exists in neo4j
+		print("Exists in MySQL, now checking if Dublin still exists in neo4j")
+		[new_city]= result
+		print("City Name in SQL is: ", new_city[0])
 		time.sleep(3)
-		#if it does check if the relationship exists
-			#Do nothing
-		#else
-			#create the relationship
+		connect()
+		with driver.session() as session:
+			neo4j_exists = session.read_transaction(get_results2)
+			#print("Does it exist: ", neo4j_exists)
+			new_int=neo4j_exists[0]
+			if new_int != [1]:
+				print("Error: Dublin does not exist in Neo4j Database")
+				time.sleep(3)
+			else:
+				print("Yes, Dublin still exists - now need to check if it is already twinned")
+				#if it is twinned then do nothing
+				#else
+				#create the relationship
+			time.sleep(3)
 
+def get_results2(tx):
+    query2 = "match(n:City{name:'Dublin'}) return count(n)"
+    names3 = []
+    results2 = tx.run(query2)
+    for x in results2:
+        names3.append(x['count(n)'])
+    x=0
+    final2=[]
+    final2.append(names3)
+    return final2
+	
 
 def test_select():
 	cursor = db.cursor()
