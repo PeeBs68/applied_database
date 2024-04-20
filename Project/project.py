@@ -305,10 +305,17 @@ def twinned_with_dublin():
 				print("Error: Dublin does not exist in Neo4j Database")
 				time.sleep(3)
 			else:
-				print("Yes, Dublin still exists - now need to check if it is already twinned")
-				#if it is twinned then do nothing
+				print("Yes, Dublin still exists - now need to check if the new city exists in neo4j")
+				#"match(n:City{name:"Dublin"})-[:TWINNED_WITH]-(n1:City{name:"Cork"}) return count(n)"
+				#if not then create it and twin with Dublin
+				#"create (:City{cid:999, name:'Cork'})"
+				#""
+				#if it already exists the just create the relationship
+				
+				#if it is already twinned then do nothing
 				#else
 				#create the relationship
+
 			time.sleep(3)
 
 def get_results2(tx):

@@ -11,7 +11,7 @@ print("Connected")
 
 cursor = db.cursor()
 
-sql = "select * from student where id = %s"
+sql = "select * from student here id = %s"
 values = (1,)
 
 cursor.execute(sql, values)
