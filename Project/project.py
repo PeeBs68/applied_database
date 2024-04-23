@@ -284,6 +284,7 @@ def twinned_with_dublin():
 	print("Twinning with Dublin")
 	city_to_twin = input("Enter ID of City to twin with Dublin : ")
 	cursor = db.cursor()
+	# Check if the city exists in MySQL
 	sql = "select name from city where id = %s"
 	values = (city_to_twin,)
 	cursor.execute(sql, values)
@@ -293,7 +294,7 @@ def twinned_with_dublin():
 		time.sleep(3)
 	else:
 		print("Exists in MySQL, now checking if Dublin still exists in neo4j")
-		[new_city]= result
+		[new_city]= result # used to create the city before twinning if needed
 		print("City Name in SQL is: ", new_city[0])
 		time.sleep(3)
 		connect()
@@ -306,17 +307,26 @@ def twinned_with_dublin():
 				time.sleep(3)
 			else:
 				print("Yes, Dublin still exists - now need to check if the new city exists in neo4j")
-				#"match(n:City{name:"Dublin"})-[:TWINNED_WITH]-(n1:City{name:"Cork"}) return count(n)"
-				#if not then create it and twin with Dublin
-				#"create (:City{cid:999, name:'Cork'})"
-				#""
-				#if it already exists the just create the relationship
-				
-				#if it is already twinned then do nothing
-				#else
-				#create the relationship
+				with driver.session() as session:
+					neo4j_exists = session.read_transaction(get_results3)
+					new_int=neo4j_exists[0]
+					if new_int != [1]:
+						print("Error: New City does not exist in Neo4j Database")
+						print("Need to create New City in Neo4j and create the relationship")
+						# use city_to_twin as city_ID
+	  					# use new_city[0] as city_name
+						#"create (:City{cid:999, name:'Cork'})"
+	  					# Now twin with Dublin
+						#"match(n:City{name:"Dublin"})-[:TWINNED_WITH]-(n1:City{name:"Cork"}) return count(n)"
+						time.sleep(3)
+					else:
+						# City already exists in Neo4j so do a merge
+						print("Doing a merge to create the relationship if it's not already there")
+						# Could do a check first but that's additional code...
+						#"match(n:City{name:"Dublin"})-[:TWINNED_WITH]-(n1:City{name:"Cork"}) return count(n)"
+						time.sleep(3)
 
-			time.sleep(3)
+# Note to self - get_results2 and get_results3 can be combined by sending the city name from the code
 
 def get_results2(tx):
     query2 = "match(n:City{name:'Dublin'}) return count(n)"
@@ -329,6 +339,16 @@ def get_results2(tx):
     final2.append(names3)
     return final2
 	
+def get_results3(tx):
+    query3 = "match(n:City{name:'Rosario'}) return count(n)"
+    names4 = []
+    results3 = tx.run(query3)
+    for x in results3:
+        names4.append(x['count(n)'])
+    x=0
+    final3=[]
+    final3.append(names4)
+    return final3
 
 def test_select():
 	cursor = db.cursor()
