@@ -313,11 +313,15 @@ def twinned_with_dublin():
 					if new_int != [1]:
 						print("Error: New City does not exist in Neo4j Database")
 						print("Need to create New City in Neo4j and create the relationship")
+						session.write_transaction(create_city, {"name":new_city[0],"cid":city_to_twin})
+						print("New City created")
+						# look into creating both the node and relationship in one query
 						# use city_to_twin as city_ID
 	  					# use new_city[0] as city_name
 						#"create (:City{cid:999, name:'Cork'})"
 	  					# Now twin with Dublin
-						#"match(n:City{name:"Dublin"})-[:TWINNED_WITH]-(n1:City{name:"Cork"}) return count(n)"
+						session.write_transaction(twin_city, {"name":new_city[0]})
+						print("Relationship Created")
 						time.sleep(3)
 					else:
 						# City already exists in Neo4j so do a merge
@@ -349,6 +353,15 @@ def get_results3(tx):
     final3=[]
     final3.append(names4)
     return final3
+
+def create_city(tx,new_city):
+	query5="merge(c:City{name:$name, cid:$cid}) return c"
+	results5 = tx.run(query5, name=new_city["name"], cid=new_city["cid"])
+
+def twin_city(tx,city_id):
+	query6="match(c:City{name:$name}) match(c1:City{name:'Dublin'}) create(c)-[:TWINNED_WITH]->(c1)"
+	results6 = tx.run(query6, name=city_id["name"])
+
 
 def test_select():
 	cursor = db.cursor()
