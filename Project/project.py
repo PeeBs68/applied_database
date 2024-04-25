@@ -289,18 +289,26 @@ def twinned_with_dublin():
 	values = (city_to_twin,)
 	cursor.execute(sql, values)
 	result = cursor.fetchall()
+
+	# Note to self - put the while here instead of the if...need to fix indents for rest of the code then
 	if len(result) == 0:
 		print(f"Error: City ID: {city_to_twin} doesn't exist in MySQL Database.")
 		time.sleep(3)
+		while len(result) == 0:
+			city_to_twin = input("Enter ID of City to twin with Dublin : ")
+			cursor = db.cursor()
+			sql = "select name from city where id = %s"
+			values = (city_to_twin,)
+			cursor.execute(sql, values)
+			result = cursor.fetchall()
 	else:
 		print("Exists in MySQL, now checking if Dublin still exists in neo4j")
 		[new_city]= result # used to create the city before twinning if needed
-		print("City Name in SQL is: ", new_city[0])
+		print("City Name in MySQL is: ", new_city[0])
 		time.sleep(3)
 		connect()
 		with driver.session() as session:
 			neo4j_exists = session.read_transaction(get_results2)
-			#print("Does it exist: ", neo4j_exists)
 			new_int=neo4j_exists[0]
 			if new_int != [1]:
 				print("Error: Dublin does not exist in Neo4j Database")
