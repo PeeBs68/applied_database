@@ -289,56 +289,50 @@ def twinned_with_dublin():
 	values = (city_to_twin,)
 	cursor.execute(sql, values)
 	result = cursor.fetchall()
+	
+	while len(result) == 0:
+		print (f"Error: City ID: {city_to_twin} doesn't exist in MySQL Database.")
+		city_to_twin = input("Enter ID of City to twin with Dublin : ")
+		cursor = db.cursor()
+		sql = "select name from city where id = %s"
+		values = (city_to_twin,)
+		cursor.execute(sql, values)
+		result = cursor.fetchall()
 
-	# Note to self - put the while here instead of the if...need to fix indents for rest of the code then
-	if len(result) == 0:
-		print(f"Error: City ID: {city_to_twin} doesn't exist in MySQL Database.")
-		time.sleep(3)
-		while len(result) == 0:
-			city_to_twin = input("Enter ID of City to twin with Dublin : ")
-			cursor = db.cursor()
-			sql = "select name from city where id = %s"
-			values = (city_to_twin,)
-			cursor.execute(sql, values)
-			result = cursor.fetchall()
-	else:
-		print("Exists in MySQL, now checking if Dublin still exists in neo4j")
-		[new_city]= result # used to create the city before twinning if needed
-		print("City Name in MySQL is: ", new_city[0])
-		time.sleep(3)
-		connect()
-		with driver.session() as session:
-			neo4j_exists = session.read_transaction(get_results2)
-			new_int=neo4j_exists[0]
-			if new_int != [1]:
-				print("Error: Dublin does not exist in Neo4j Database")
-				time.sleep(3)
-			else:
-				print("Yes, Dublin still exists - now need to check if the new city exists in neo4j")
-				with driver.session() as session:
-					neo4j_exists = session.read_transaction(get_results3)
-					new_int=neo4j_exists[0]
-					if new_int != [1]:
-						print("Error: New City does not exist in Neo4j Database")
-						print("Need to create New City in Neo4j and create the relationship")
-						session.write_transaction(create_city, {"name":new_city[0],"cid":city_to_twin})
-						print("New City created")
-						# look into creating both the node and relationship in one query
+	print("Exists in MySQL, now checking if Dublin still exists in neo4j")
+	[new_city]= result # used to create the city before twinning if needed
+	print("City Name in MySQL is: ", new_city[0])
+	time.sleep(3)
+	connect()
+	with driver.session() as session:
+		neo4j_exists = session.read_transaction(get_results2)
+		new_int=neo4j_exists[0]
+		if new_int != [1]:
+			print("Error: Dublin does not exist in Neo4j Database")
+			time.sleep(3)
+		else:
+			print("Yes, Dublin still exists - now need to check if the new city exists in neo4j")
+			with driver.session() as session:
+				neo4j_exists = session.read_transaction(get_results3,{"cid":city_to_twin})
+				new_int=neo4j_exists[0]
+				if new_int != [1]:
+					print("Error: New City does not exist in Neo4j Database")
+					print("Need to create New City in Neo4j and create the relationship")
+					session.write_transaction(create_city, {"name":new_city[0],"cid":city_to_twin})
+					print("New City created")
+					# look into creating both the node and relationship in one query
 						# use city_to_twin as city_ID
 	  					# use new_city[0] as city_name
 						#"create (:City{cid:999, name:'Cork'})"
 	  					# Now twin with Dublin
-						session.write_transaction(twin_city, {"name":new_city[0]})
-						print("Relationship Created")
-						time.sleep(3)
-					else:
-						# City already exists in Neo4j so do a merge
-						print("Doing a merge to create the relationship if it's not already there")
-						# Could do a check first but that's additional code...
-						#"match(n:City{name:"Dublin"})-[:TWINNED_WITH]-(n1:City{name:"Cork"}) return count(n)"
-						time.sleep(3)
-
-# Note to self - get_results2 and get_results3 can be combined by sending the city name from the code
+					session.write_transaction(twin_city, {"name":new_city[0]})
+					print("Relationship Created")
+					time.sleep(3)
+				else:
+					print("City exists so just creating the relationship")
+					session.write_transaction(twin_city, {"name":new_city[0]})
+					print("Relationship Created")
+					time.sleep(3)
 
 def get_results2(tx):
     query2 = "match(n:City{name:'Dublin'}) return count(n)"
@@ -351,10 +345,10 @@ def get_results2(tx):
     final2.append(names3)
     return final2
 	
-def get_results3(tx):
-    query3 = "match(n:City{name:'Rosario'}) return count(n)"
+def get_results3(tx,city_id):
+    query3 = "match(n:City{cid:$cid}) return count(n)"
     names4 = []
-    results3 = tx.run(query3)
+    results3 = tx.run(query3, cid=city_id["cid"])
     for x in results3:
         names4.append(x['count(n)'])
     x=0
@@ -367,7 +361,7 @@ def create_city(tx,new_city):
 	results5 = tx.run(query5, name=new_city["name"], cid=new_city["cid"])
 
 def twin_city(tx,city_id):
-	query6="match(c:City{name:$name}) match(c1:City{name:'Dublin'}) create(c)-[:TWINNED_WITH]->(c1)"
+	query6="match(c:City{name:$name}) match(c1:City{name:'Dublin'}) merge(c)-[:TWINNED_WITH]->(c1)"
 	results6 = tx.run(query6, name=city_id["name"])
 
 
