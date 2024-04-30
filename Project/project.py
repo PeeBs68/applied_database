@@ -1,9 +1,8 @@
-
+# project.py
+# author: Phelim Barry
 
 # Main function
 def main():
-	# Initialise array
-#	array = []
 
 	display_menu()
 	
@@ -113,21 +112,10 @@ def update_population():
 		# https://stackoverflow.com/questions/33161448/getting-only-element-from-a-single-element-list-in-python
 		[new]= result
 		print(f"\nPopulation updated to {new[0]}, returning to main menu")
-		#[new]= result
-		#print(new[0])
-		#for x in result:
-		#	print(*x)
 		time.sleep(3)
 	else:
 		print ("try Again...")
 
-
-	
-
-	
-	#for x in result:
-#		print(x)
-#	time.sleep(3)
 
 
 def add_person():
@@ -199,7 +187,6 @@ def delete_person():
 				cursor.execute(sql, values)
 				# https://stackoverflow.com/questions/2511679/python-number-of-rows-affected-by-cursor-executeselect
 				rows_affected=cursor.rowcount
-				#print(rows_affected)
 				db.commit()
 				if rows_affected == 0:
 					print(f"No rows deleted - person_id {id} does not exist")
@@ -257,13 +244,14 @@ def view_twinned():
 		final = session.read_transaction(get_results)
 		for x in final:
 			print(x)
-			#time.sleep(1)
 		time.sleep(3)
-		#print(final)
 def connect():
     global driver
-    uri = "neo4j://localhost:7687"
-    driver = GraphDatabase.driver(uri, auth=("neo4j", "rootroot"))
+	# Note to self - move config stuff to config.py
+    #uri = "neo4j://localhost:7687"
+	#driver = GraphDatabase.driver(cfg["n_uri"], auth=cfg["n_auth"])
+    driver = GraphDatabase.driver(cfg["n_uri"], auth=("neo4j", "rootroot"))
+	
 def get_results(tx):
     query = "match(n:City)-[t:TWINNED_WITH]-(n1:City) return n.name, n1.name order by n.name"
     names = []
@@ -365,41 +353,9 @@ def twin_city(tx,city_id):
 	results6 = tx.run(query6, name=city_id["name"])
 
 
-def test_select():
-	cursor = db.cursor()
-	sql = "select * from student where id = %s"
-	values = (3,)
-	cursor.execute(sql, values)
-	result = cursor.fetchall()
-	for x in result:
-		print(x)
-	time.sleep(3) # Replace with a "press c to continue or something"
-
-
-'''
-def fill_array():
-	temparray=[]
-	num=int(input("Enter Num: "))
-	if num != -1:
-		temparray.append(num)
-	while num != -1:
-		num=int(input("Enter Num: "))
-		if num != -1:
-			temparray.append(num)
-	return temparray
-'''
-'''
-def find_gt_in_array(array):
-	num=int(input("Enter Num: "))
-# https://stackoverflow.com/questions/4587915/return-list-of-items-in-list-greater-than-some-value
-	list = [x for x in array if x > num]
-	print(list)
-'''
-
-
 def display_menu():
-#	import os
-	os.system('clear')
+	#os.system('clear') if running on mac/linux
+	os.system('cls') # if running on windows
 	print("=" * 60)
 	print("                             MENU")
 	print("=" * 60)
