@@ -38,6 +38,7 @@ def main():
 		else:
 			display_menu()
 			
+# Menu Item 1
 def view_cities():
 	country = input("Entry Country: ")
 	cursor = db.cursor()
@@ -63,6 +64,7 @@ def view_cities():
 			else:
 				continue	
 		
+# Menu Item 2
 def update_population():
 	result=""
 	city_id = int(input("Enter City ID: "))
@@ -111,20 +113,22 @@ def update_population():
 		result = cursor.fetchall()
 		# https://stackoverflow.com/questions/33161448/getting-only-element-from-a-single-element-list-in-python
 		[new]= result
-		print(f"\nPopulation updated to {new[0]}, returning to main menu")
-		time.sleep(3)
+		print(f"\nPopulation updated to {new[0]}, press any key to return to the main menu")
+		next = click.getchar()   # Gets a single character from the keyboard before continuing
+
+		#time.sleep(3)
 	else:
 		print ("try Again...")
 
 
-
+# Menu Item 3
 def add_person():
 	print("Adding Person")
-	id = int(input("ID: "))
-	name = input("Name: ")
-	age = input("Age: ")
-	salary = input("Salary: ")
-	city_id = input("City ID: ")
+	id = int(input("\tID: "))
+	name = input("\tName: ")
+	age = input("\tAge: ")
+	salary = input("\tSalary: ")
+	city_id = input("\tCity ID: ")
 
 	# Checks for personid and city
 	cursor = db.cursor()
@@ -140,11 +144,11 @@ def add_person():
 	result2 = cursor2.fetchall()
 
 	if len(result) != 0:
-		print("Person Id", id, "already exists")
+		print("Person Id", id, "already exists, returning to the Main Menu")
 		time.sleep(3)
 		display_menu()
 	elif len(result2) == 0:
-		print("City ID", city_id, "does not exist")
+		print("City ID", city_id, "does not exist, returning to the Main Menu")
 		time.sleep(3)
 		display_menu()
 	else:
@@ -155,7 +159,8 @@ def add_person():
 				values = (id, name, age, salary, city_id,)
 				cursor.execute(sql, values)
 				db.commit()
-				print("Insert Complete")
+				print("Insert Complete, press any key to return to the Main Menu")
+				next = click.getchar()   # Gets a single character from the keyboard before continuing
 				time.sleep(3) # Replace with a "press c to continue or something"
 				break
 			except mysql.connector.Error as err:
@@ -165,7 +170,7 @@ def add_person():
 				time.sleep(3)
 				break
 			
-
+# Menu Item 4
 def delete_person():
 	while True:
 		try:
@@ -189,11 +194,11 @@ def delete_person():
 				rows_affected=cursor.rowcount
 				db.commit()
 				if rows_affected == 0:
-					print(f"No rows deleted - person_id {id} does not exist")
+					print(f"No rows deleted - person_id {id} does not exist, returning to main menu")
 					time.sleep(3)
 					break
 				else:
-					print(f"Person ID: {id} deleted - returning to main menu")
+					print(f"Person ID: {id} deleted, returning to main menu")
 					time.sleep(3) # Replace with a "press c (using 'get' maybe)to continue or something"
 					break
 		except mysql.connector.Error as err:
@@ -202,6 +207,7 @@ def delete_person():
 			time.sleep(3)
 			break
 
+# Menu Item 5
 def view_by_pop():
 	print("View Countries by Population")
 	to_do = ""
@@ -226,12 +232,6 @@ def view_by_pop():
 	result = cursor.fetchall()
 	heads = ("code", "name", "continent", "population")
 	print(tabulate(result, headers = heads))
-	#for x in result:
-		#print (len(x))
-		#print(*result, sep = '\t')
-		#from tabulate import tabulate
-		#print(tabulate(result))
-		#print(x)
 	time.sleep(3)
 
 # Menu Item 6
@@ -308,11 +308,6 @@ def twinned_with_dublin():
 					print("Need to create New City in Neo4j and create the relationship")
 					session.write_transaction(create_city, {"name":new_city[0],"cid":city_to_twin})
 					print("New City created")
-					# look into creating both the node and relationship in one query
-						# use city_to_twin as city_ID
-	  					# use new_city[0] as city_name
-						#"create (:City{cid:999, name:'Cork'})"
-	  					# Now twin with Dublin
 					session.write_transaction(twin_city, {"name":new_city[0]})
 					print("Relationship Created")
 					time.sleep(3)
@@ -322,6 +317,7 @@ def twinned_with_dublin():
 					print("Relationship Created")
 					time.sleep(3)
 
+# Check if Dublin exists in Neo4j
 def get_results2(tx):
     query2 = "match(n:City{name:'Dublin'}) return count(n)"
     names3 = []
@@ -333,6 +329,7 @@ def get_results2(tx):
     final2.append(names3)
     return final2
 	
+# Check if new city exists in Neo4j
 def get_results3(tx,city_id):
     query3 = "match(n:City{cid:$cid}) return count(n)"
     names4 = []
@@ -344,10 +341,12 @@ def get_results3(tx,city_id):
     final3.append(names4)
     return final3
 
+# Create new city and twin relationship in Neo4j
 def create_city(tx,new_city):
 	query5="merge(c:City{name:$name, cid:$cid}) return c"
 	results5 = tx.run(query5, name=new_city["name"], cid=new_city["cid"])
 
+# Create twin relationship for existing city in Neo4j
 def twin_city(tx,city_id):
 	query6="match(c:City{name:$name}) match(c1:City{name:'Dublin'}) merge(c)-[:TWINNED_WITH]->(c1)"
 	results6 = tx.run(query6, name=city_id["name"])
@@ -366,8 +365,6 @@ def display_menu():
 	print("5 - View Countries by population")
 	print("6 - Show Twinned Cities")
 	print("7 - Twin with Dublin")
-	print("8 - Test Select")
-
 	print("x - Exit application")
 
 if __name__ == "__main__":
@@ -384,6 +381,7 @@ if __name__ == "__main__":
 
 	driver = None
 
+	# MySQl connection
 	db = mysql.connector.connect(
     host=cfg["host"],
     user = cfg["user"],
