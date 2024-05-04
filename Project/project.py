@@ -41,7 +41,7 @@ def view_cities():
 	cursor = db.cursor()
 	sql = "select ci.name, ci.district, ci.population, co.name as country_name from city ci inner join country co on ci.countrycode = co.code where co.name like %s"
 
-	values = ("%"+country+"%",)
+	values = ("%"+country+"%",) # use wildcards to widen the search
 	cursor.execute(sql, values)
 	result = cursor.fetchall()
 	lines = 0
@@ -49,6 +49,8 @@ def view_cities():
 	#Note to self - maybe convert result to a list to format the output nicer
 	#resultstr = [str(x) for x in result]
 	#print (resultstr)
+ 
+	# Print the results to the terminal
 	for x in result:
 		print(*x, sep ='\t')
 		lines = lines+1
@@ -63,60 +65,58 @@ def view_cities():
 		
 # Menu Item 2
 def update_population():
-	result=""
-	city_id = int(input("Enter City ID: "))
-	cursor = db.cursor()
-	sql = "select id, name, countrycode, district, population, latitude, longitude from city where id = %s"
-	values = (city_id,)
-	cursor.execute(sql, values)
-	result = cursor.fetchall()
+    result=""
+    city_id = int(input("Enter City ID: "))
+    cursor = db.cursor()
+    sql = "select id, name, countrycode, district, population, latitude, longitude from city where id = %s"
+    values = (city_id,)
+    cursor.execute(sql, values)
+    result = cursor.fetchall()
 
-	while len(result) == 0:
-		print("\nNo city found for ID = ", city_id)
-		city_id = int(input("\nEnter City ID: "))
-		cursor = db.cursor()
-		sql = "select id, name, countrycode, district, population, latitude, longitude from city where id = %s"
-		values = (city_id,)
-		cursor.execute(sql, values)
-		result = cursor.fetchall()
+	# Check if city id exists - ask for a new one if not
+    while len(result) == 0:
+        print("\nNo city found for ID = ", city_id)
+        city_id = int(input("\nEnter City ID: "))
+        cursor = db.cursor()
+        sql = "select id, name, countrycode, district, population, latitude, longitude from city where id = %s"
+        values = (city_id,)
+        cursor.execute(sql, values)
+        result = cursor.fetchall()
 
-	if len(result) == 1:
-		heads = ("ID", "Name", "CountryCode", "District", "Population", "Longitude", "Latitude")
-		print(tabulate(result, headers = heads))
-		to_do = ""
-		while to_do not in ("D", "d", "I", "i"):
-			to_do = input("[I]ncrease/[D]ecrease Population: ")
-			if to_do in "I, i":
-				symbol = "+"
-				#https://www.geeksforgeeks.org/what-does-s-mean-in-a-python-format-string/
-				sql = "update city set population = population + %s where ID = %s"
-			elif to_do in "D, d":
-				symbol = "-"
-				sql = "update city set population = population - %s where ID = %s"
-			else: 
-				print("Try Again...")
-				to_do=""
-		how_much = int(input("Enter Population "))
-		values = (how_much,city_id,)
+    if len(result) == 1:
+        heads = ("ID", "Name", "CountryCode", "District", "Population", "Longitude", "Latitude")
+        print(tabulate(result, headers = heads))
+        to_do = ""
+        while to_do not in ("D", "d", "I", "i"):
+            to_do = input("[I]ncrease/[D]ecrease Population: ")
+            if to_do in "I, i":
+                symbol = "+"
+                #https://www.geeksforgeeks.org/what-does-s-mean-in-a-python-format-string/
+                sql = "update city set population = population + %s where ID = %s"
+            elif to_do in "D, d":
+                symbol = "-"
+                sql = "update city set population = population - %s where ID = %s"
+            else: 
+                print("Try Again...")
+                to_do=""
+        how_much = int(input("Enter Population "))
+        values = (how_much,city_id,)
 
-		cursor.execute(sql, values)
-		db.commit()
+        cursor.execute(sql, values)
+        db.commit()
 
-		#Probably overkill to do this bit but looks nice to me...
-		cursor = db.cursor()
-		sql = "select population from city where id = %s"
-		values = (city_id,)
-		cursor.execute(sql, values)
-		result = cursor.fetchall()
-		# https://stackoverflow.com/questions/33161448/getting-only-element-from-a-single-element-list-in-python
-		[new]= result
-		print(f"\nPopulation updated to {new[0]}, press any key to return to the main menu")
-		next = click.getchar()   # Gets a single character from the keyboard before continuing
-
-		#time.sleep(3)
-	else:
-		print ("try Again...")
-
+        #Probably overkill to do this bit but gives better feedback to the user
+        cursor = db.cursor()
+        sql = "select population from city where id = %s"
+        values = (city_id,)
+        cursor.execute(sql, values)
+        result = cursor.fetchall()
+        # https://stackoverflow.com/questions/33161448/getting-only-element-from-a-single-element-list-in-python
+        [new]= result
+        print(f"\nPopulation updated to {new[0]}, press any key to return to the main menu")
+        next = click.getchar()   # Gets a single character from the keyboard before continuing
+    else:
+        print ("try Again...")
 
 # Menu Item 3
 def add_person():
@@ -127,13 +127,14 @@ def add_person():
 	salary = input("\tSalary: ")
 	city_id = input("\tCity ID: ")
 
-	# Checks for personid and city
+	# Check personid exists
 	cursor = db.cursor()
 	sql = "select * from person where personid = %s"
 	values = (id,)
 	cursor.execute(sql, values)
 	result = cursor.fetchall()
 
+	# Check city id exists
 	cursor2 = db.cursor()
 	sql = "select * from person where city = %s"
 	values2 = (city_id,)
@@ -158,7 +159,6 @@ def add_person():
 				db.commit()
 				print("Insert Complete, press any key to return to the Main Menu")
 				next = click.getchar()   # Gets a single character from the keyboard before continuing
-				time.sleep(3) # Replace with a "press c to continue or something"
 				break
 			except mysql.connector.Error as err:
         		# https://stackoverflow.com/questions/68438901/how-do-i-handle-mysql-exceptions-in-python
@@ -178,6 +178,7 @@ def delete_person():
 			values = (id,)
 			cursor.execute(sql, values)
 			result = cursor.fetchall()
+			# Check if the person id has visited a city
 			if len(result) != 0:
 				print(f"Error: Can't delete Person ID: {id}. He/She has visited cities.")
 				time.sleep(3)
@@ -221,7 +222,7 @@ def view_by_pop():
 			symbol = "="
 			sql = "select code, name, continent, population from country where population = %s"
 		else: 
-			print("Try Again...")
+			print("Invalid choice, try Again...>, <, =")
 			to_do=""
 	pop = int(input("Enter Population "))
 	values = (pop,)
@@ -242,6 +243,7 @@ def view_twinned():
 		for x in final:
 			print(x)
 		time.sleep(3)
+		
 def connect():
     global driver
 	# Note to self - move config stuff to config.py
