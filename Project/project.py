@@ -30,9 +30,6 @@ def main():
 		elif (choice == "7"):
 			twinned_with_dublin()
 			display_menu()
-		elif (choice == "8"):
-			test_select()
-			display_menu()
 		elif (choice == "x"):
 			break;
 		else:
