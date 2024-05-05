@@ -1,6 +1,6 @@
 import mysql.connector
 from config import config as cfg
-
+'''
 db = mysql.connector.connect(
     host=cfg["host"],
     user = cfg["user"],
@@ -23,3 +23,7 @@ cursor.close()
 db.close()
 
 print("Connection Closed")
+'''
+part1, part2 = cfg["n_auth"]
+print (part1)
+print (part2)

@@ -234,7 +234,7 @@ def view_by_pop():
 
 # Menu Item 6
 def view_twinned():
-	print("View Twinned Cities")
+	#print("View Twinned Cities")
 	print ("Twinned Cities")
 	print ("--------------")
 	connect()
@@ -242,14 +242,19 @@ def view_twinned():
 		final = session.read_transaction(get_results)
 		for x in final:
 			print(x)
-		time.sleep(3)
-		
+		#time.sleep(3)
+		print("\nPress any key to return to the main menu")
+		next = click.getchar()
+
+# Neo4j connection
 def connect():
-    global driver
+	global driver
 	# Note to self - move config stuff to config.py
     #uri = "neo4j://localhost:7687"
 	#driver = GraphDatabase.driver(cfg["n_uri"], auth=cfg["n_auth"])
-    driver = GraphDatabase.driver(cfg["n_uri"], auth=("neo4j", "rootroot"))
+	u_name, pwd = cfg["n_auth"]
+	driver = GraphDatabase.driver(cfg["n_uri"], auth=(u_name, pwd))	
+	#driver = GraphDatabase.driver(cfg["n_uri"], auth=("neo4j", "rootroot"))
 	
 def get_results(tx):
     query = "match(n:City)-[t:TWINNED_WITH]-(n1:City) return n.name, n1.name order by n.name"
@@ -352,8 +357,8 @@ def twin_city(tx,city_id):
 
 
 def display_menu():
-	#os.system('clear') if running on mac/linux
-	os.system('cls') # if running on windows
+	os.system('clear') #if running on mac/linux
+	#os.system('cls') # if running on windows
 	print("=" * 60)
 	print("                             MENU")
 	print("=" * 60)
