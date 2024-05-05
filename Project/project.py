@@ -46,9 +46,6 @@ def view_cities():
 	result = cursor.fetchall()
 	lines = 0
 	print("Name\tDistrict\tPopulation\tName")
-	#Note to self - maybe convert result to a list to format the output nicer
-	#resultstr = [str(x) for x in result]
-	#print (resultstr)
  
 	# Print the results to the terminal
 	for x in result:
@@ -97,7 +94,7 @@ def update_population():
                 symbol = "-"
                 sql = "update city set population = population - %s where ID = %s"
             else: 
-                print("Try Again...")
+                print("Invalid input, try Again...")
                 to_do=""
         how_much = int(input("Enter Population "))
         values = (how_much,city_id,)
@@ -197,7 +194,7 @@ def delete_person():
 					break
 				else:
 					print(f"Person ID: {id} deleted, returning to main menu")
-					time.sleep(3) # Replace with a "press c (using 'get' maybe)to continue or something"
+					time.sleep(3)
 					break
 		except mysql.connector.Error as err:
 			# https://stackoverflow.com/questions/68438901/how-do-i-handle-mysql-exceptions-in-python
@@ -234,7 +231,6 @@ def view_by_pop():
 
 # Menu Item 6
 def view_twinned():
-	#print("View Twinned Cities")
 	print ("Twinned Cities")
 	print ("--------------")
 	connect()
@@ -242,19 +238,14 @@ def view_twinned():
 		final = session.read_transaction(get_results)
 		for x in final:
 			print(x)
-		#time.sleep(3)
 		print("\nPress any key to return to the main menu")
 		next = click.getchar()
 
 # Neo4j connection
 def connect():
 	global driver
-	# Note to self - move config stuff to config.py
-    #uri = "neo4j://localhost:7687"
-	#driver = GraphDatabase.driver(cfg["n_uri"], auth=cfg["n_auth"])
 	u_name, pwd = cfg["n_auth"]
 	driver = GraphDatabase.driver(cfg["n_uri"], auth=(u_name, pwd))	
-	#driver = GraphDatabase.driver(cfg["n_uri"], auth=("neo4j", "rootroot"))
 	
 def get_results(tx):
     query = "match(n:City)-[t:TWINNED_WITH]-(n1:City) return n.name, n1.name order by n.name"
@@ -291,7 +282,7 @@ def twinned_with_dublin():
 		cursor.execute(sql, values)
 		result = cursor.fetchall()
 
-	print("Exists in MySQL, now checking if Dublin still exists in neo4j")
+	#print("Exists in MySQL, now checking if Dublin still exists in neo4j")
 	[new_city]= result # used to create the city before twinning if needed
 	print("City Name in MySQL is: ", new_city[0])
 	time.sleep(3)
@@ -300,26 +291,30 @@ def twinned_with_dublin():
 		neo4j_exists = session.read_transaction(get_results2)
 		new_int=neo4j_exists[0]
 		if new_int != [1]:
-			print("Error: Dublin does not exist in Neo4j Database")
+			print("Error: Dublin does not exist in Neo4j Database...exiting!")
 			time.sleep(3)
 		else:
-			print("Yes, Dublin still exists - now need to check if the new city exists in neo4j")
+			#print("Yes, Dublin still exists - now need to check if the new city exists in neo4j")
 			with driver.session() as session:
 				neo4j_exists = session.read_transaction(get_results3,{"cid":city_to_twin})
 				new_int=neo4j_exists[0]
 				if new_int != [1]:
-					print("Error: New City does not exist in Neo4j Database")
-					print("Need to create New City in Neo4j and create the relationship")
+					print(f"Warning: {new_city[0]} does not exist in Neo4j Database")
+					#print("Need to create New City in Neo4j and create the relationship")
 					session.write_transaction(create_city, {"name":new_city[0],"cid":city_to_twin})
-					print("New City created")
+					print(f"{new_city[0]} created in neo4j")
 					session.write_transaction(twin_city, {"name":new_city[0]})
-					print("Relationship Created")
-					time.sleep(3)
+					print(f"Relationship created between {new_city[0]} and Dublin")
+					print("\nPress any key to continue")
+					next = click.getchar()
+	 
 				else:
-					print("City exists so just creating the relationship")
+					print(f"{new_city[0]} exists in neo4j so just creating the relationship")
 					session.write_transaction(twin_city, {"name":new_city[0]})
-					print("Relationship Created")
-					time.sleep(3)
+					print(f"Relationship created between {new_city[0]} and Dublin")
+					print("\nPress any key to continue")
+					next = click.getchar()
+					#time.sleep(3)
 
 # Check if Dublin exists in Neo4j
 def get_results2(tx):
